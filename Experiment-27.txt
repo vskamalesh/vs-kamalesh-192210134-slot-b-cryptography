@@ -1,0 +1,64 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+unsigned long mod_exp(unsigned long base, unsigned long exponent, unsigned long modulus) {
+    unsigned long result = 1;
+    base = base % modulus;
+    while (exponent > 0) {
+        if (exponent % 2 == 1)
+            result = (result * base) % modulus;
+        exponent = exponent >> 1;
+        base = (base * base) % modulus;
+    }
+    return result;
+}
+unsigned long rsa_encrypt(unsigned long plaintext, unsigned long e, unsigned long n) {
+    return mod_exp(plaintext, e, n);
+}
+unsigned long rsa_decrypt(unsigned long ciphertext, unsigned long d, unsigned long n) {
+    return mod_exp(ciphertext, d, n);
+}
+int char_to_int(char c) {
+    if (c >= 'A' && c <= 'Z')
+        return c - 'A';
+    else if (c >= 'a' && c <= 'z')
+        return c - 'a';
+    else
+        return -1;
+}
+char int_to_char(int i) {
+    if (i >= 0 && i < 26)
+        return 'A' + i;
+    else
+        return '?';
+}
+int main() {
+    unsigned long p = 61;
+    unsigned long q = 53;
+    unsigned long n = p * q;            
+    unsigned long phi = (p - 1) * (q - 1); 
+    unsigned long e = 17;              
+    unsigned long d = 2753;             
+
+    char plaintext[] = "HELLO";
+    unsigned long ciphertext[sizeof(plaintext) - 1];
+    int i;
+    printf("Encrypting message: %s\n", plaintext);
+    for (i = 0; i < sizeof(plaintext) - 1; i++) {
+        int m = char_to_int(plaintext[i]);
+        if (m == -1) {
+            printf("Invalid character encountered.\n");
+            return 1;
+        }
+        ciphertext[i] = rsa_encrypt(m, e, n);
+        printf("Encrypted '%c' -> %lu\n", plaintext[i], ciphertext[i]);
+    }
+    printf("\nDecrypting message:\n");
+    for (i = 0; i < sizeof(plaintext) - 1; i++) {
+        int m = rsa_decrypt(ciphertext[i], d, n);
+        char c = int_to_char(m);
+        printf("Decrypted %lu -> '%c'\n", ciphertext[i], c);
+    }
+    return 0;
+}
+

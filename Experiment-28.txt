@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+long long mod_exp(long long base, long long exp, long long mod) {
+    long long result = 1;
+    base = base % mod;
+    while (exp > 0) {
+        if (exp % 2 == 1)  // If exp is odd
+            result = (result * base) % mod;
+        exp = exp >> 1;    // exp = exp / 2
+        base = (base * base) % mod;
+    }
+    return result;
+}
+
+int main() {
+
+    long long q = 23; 
+    long long a = 5;  
+
+    
+    long long x_A, x_B;
+    srand(time(NULL));
+    x_A = rand() % (q - 2) + 1; // 1 <= x_A <= q-2
+    x_B = rand() % (q - 2) + 1; // 1 <= x_B <= q-2
+
+ 
+    long long y_A = mod_exp(a, x_A, q);
+    long long y_B = mod_exp(a, x_B, q);
+
+    
+    long long k_A = mod_exp(y_B, x_A, q);
+    long long k_B = mod_exp(y_A, x_B, q);
+
+    
+    printf("Public parameters:\n");
+    printf("  Prime number (q): %lld\n", q);
+    printf("  Primitive root (a): %lld\n\n", a);
+
+    printf("Alice's private key (x_A): %lld\n", x_A);
+    printf("Alice's public key (y_A): %lld\n\n", y_A);
+
+    printf("Bob's private key (x_B): %lld\n", x_B);
+    printf("Bob's public key (y_B): %lld\n\n", y_B);
+
+    printf("Alice's computed shared secret: %lld\n", k_A);
+    printf("Bob's computed shared secret: %lld\n", k_B);
+
+    if (k_A == k_B) {
+        printf("\nKey exchange successful. Shared secret established.\n");
+    } else {
+        printf("\nKey exchange failed. Shared secrets do not match.\n");
+    }
+    return 0;
+}

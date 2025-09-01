@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+int generate_random_number(int min, int max) {
+    return min + rand() % (max - min + 1);
+}
+int mod_exp(int base, int exponent, int modulus) {
+    int result = 1;
+    while (exponent > 0) {
+        if (exponent % 2 == 1)
+            result = (result * base) % modulus;
+        base = (base * base) % modulus;
+        exponent /= 2;
+    }
+    return result;
+}
+
+
+void dsa_signature(int p, int q, int g, int x, int k, int m, int *r, int *s) {
+    int k_inv = 1;
+    while ((k * k_inv) % q != 1) {
+        k_inv++;
+    }
+
+    *r = mod_exp(g, k, p) % q;
+    *s = (k_inv * (m + x * *r)) % q;
+}
+
+
+void rsa_signature(int n, int d, int m, int *signature) {
+    *signature = mod_exp(m, d, n);
+}
+
+int main() {
+    srand(time(NULL));
+
+    
+    int p = 353;
+    int q = 71;
+    int g = 3;
+    int x = 10;
+
+   
+    int n = 323;
+    int d = 101; 
+
+    int m = 123; 
+
+    
+    int k1 = generate_random_number(1, q - 1);
+    int r1, s1;
+    dsa_signature(p, q, g, x, k1, m, &r1, &s1);
+    printf("DSA signature 1: (%d, %d)\n", r1, s1);
+
+    int k2 = generate_random_number(1, q - 1);
+    int r2, s2;
+    dsa_signature(p, q, g, x, k2, m, &r2, &s2);
+    printf("DSA signature 2: (%d, %d)\n", r2, s2);
+
+    int signature1;
+    rsa_signature(n, d, m, &signature1);
+    printf("RSA signature 1: %d\n", signature1);
+    int signature2;
+    rsa_signature(n, d, m, &signature2);
+    printf("RSA signature 2: %d\n", signature2);
+    return 0;
+}
+

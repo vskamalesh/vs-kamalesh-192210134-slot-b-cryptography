@@ -1,0 +1,59 @@
+#include <stdio.h>
+#include <stdlib.h>
+int gcd(int a, int b) {
+    if (b == 0)
+        return a;
+    return gcd(b, a % b);
+}
+int mod_inverse(int a, int m) {
+    int x, y;
+    int g = gcd(a, m);
+    if (g != 1)
+        return -1;
+    else {
+        
+        int x1 = 1, y1 = 0, x2 = 0, y2 = 1, b = m;
+        while (a > 0) {
+            int q = b / a;
+            int temp = b % a;
+            b = a;
+            a = temp;
+            temp = x2;
+            x2 = x1 - q * x2;
+            x1 = temp;
+            temp = y2;
+            y2 = y1 - q * y2;
+            y1 = temp;
+        }
+        x = x1;
+        y = y1;
+    }
+    if (x < 0)
+        x += m;
+    return x;
+}
+
+int main() {
+    int p = 61; 
+    int q = 53; 
+    int n = p * q;
+    int fn = (p - 1) * (q - 1);
+    int e1 = 17;
+    while (gcd(e1, fn) != 1) {
+        e1++;
+    }
+    int d1 = mod_inverse(e1, fn);
+    printf("Initial public key: (%d, %d)\n", e1, n);
+    printf("Initial private key: %d\n", d1);
+    printf("Private key leaked: %d\n", d1);
+    int e2 = 23;
+    while (gcd(e2, fn) != 1) {
+        e2++;
+    }
+    int d2 = mod_inverse(e2, fn);
+    printf("New public key: (%d, %d)\n", e2, n);
+    printf("New private key: %d\n", d2);
+    printf("Is regenerating a new public and private key safe? No\n");
+    return 0;
+}
+

@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#define BLOCK_SIZE 16
+void xor_blocks(uint8_t *block1, uint8_t *block2, uint8_t *result) {
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        result[i] = block1[i] ^ block2[i];
+    }
+}
+void encrypt_block(uint8_t *block, uint8_t *key, uint8_t *result) {
+    
+    xor_blocks(block, key, result);
+}
+void cbc_mac(uint8_t *message, int message_len, uint8_t *key, uint8_t *mac) {
+    uint8_t block[BLOCK_SIZE];
+    uint8_t encrypted_block[BLOCK_SIZE];
+
+  
+    memset(block, 0, BLOCK_SIZE);
+
+    
+    for (int i = 0; i < message_len; i += BLOCK_SIZE) {
+        
+        xor_blocks(block, message + i, block);
+
+        
+        encrypt_block(block, key, encrypted_block);
+
+      
+        memcpy(block, encrypted_block, BLOCK_SIZE);
+    }
+
+
+    memcpy(mac, block, BLOCK_SIZE);
+}
+
+int main() {
+    uint8_t key[BLOCK_SIZE] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16};
+    uint8_t message[BLOCK_SIZE] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15};
+    uint8_t mac[BLOCK_SIZE];
+
+
+    cbc_mac(message, BLOCK_SIZE, key, mac);
+
+    printf("CBC MAC for one-block message: ");
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        printf("%02x", mac[i]);
+    }
+    printf("\n");
+
+    uint8_t two_block_message[2 * BLOCK_SIZE];
+    memcpy(two_block_message, message, BLOCK_SIZE);
+    xor_blocks(message, mac, two_block_message + BLOCK_SIZE);
+    uint8_t two_block_mac[BLOCK_SIZE];
+    cbc_mac(two_block_message, 2 * BLOCK_SIZE, key, two_block_mac);
+    printf("CBC MAC for two-block message X || (X ⊕ T): ");
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        printf("%02x", two_block_mac[i]);
+    }
+    printf("\n");
+    return 0;
+}

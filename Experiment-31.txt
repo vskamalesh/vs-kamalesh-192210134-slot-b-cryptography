@@ -1,0 +1,66 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+void left_shift(uint8_t *block, int block_size) {
+    uint8_t carry = 0;
+    for (int i = block_size - 1; i >= 0; i--) {
+        uint8_t new_carry = block[i] >> 7;
+        block[i] = (block[i] << 1) | carry;
+        carry = new_carry;
+    }
+}
+void xor_block(uint8_t *block, uint8_t *constant, int block_size) {
+    for (int i = 0; i < block_size; i++) {
+        block[i] ^= constant[i];
+    }
+}
+void generate_subkeys(uint8_t *key, int block_size, uint8_t *subkey1, uint8_t *subkey2) {
+    uint8_t zero_block[block_size];
+    memset(zero_block, 0, block_size);
+
+    
+    uint8_t l[block_size];
+    memcpy(l, zero_block, block_size);
+
+   
+    left_shift(l, block_size);
+    uint8_t constant[block_size];
+    if (block_size == 8) { 
+        constant[0] = 0x1b;
+    } else if (block_size == 16) { 
+        constant[0] = 0x87;
+    }
+    xor_block(l, constant, block_size);
+    memcpy(subkey1, l, block_size);
+
+    
+    left_shift(subkey1, block_size);
+    xor_block(subkey1, constant, block_size);
+    memcpy(subkey2, subkey1, block_size);
+}
+
+int main() {
+    int block_size = 16;
+    uint8_t key[block_size];
+    memset(key, 0, block_size);
+
+    uint8_t subkey1[block_size];
+    uint8_t subkey2[block_size];
+
+    generate_subkeys(key, block_size, subkey1, subkey2);
+
+    printf("Subkey 1: ");
+    for (int i = 0; i < block_size; i++) {
+        printf("%02x", subkey1[i]);
+    }
+    printf("\n");
+
+    printf("Subkey 2: ");
+    for (int i = 0; i < block_size; i++) {
+        printf("%02x", subkey2[i]);
+    }
+    printf("\n");
+    return 0;
+}
+
+
